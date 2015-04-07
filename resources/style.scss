@@ -149,6 +149,7 @@ span.active-buzzer:after {
     .question.box .clue {
       position: relative;
       top: 40%;
+      max-width: 100%;
       font-size:150%;
       text-shadow: 5px 5px 5px #000;
       color: #d69f4c;
