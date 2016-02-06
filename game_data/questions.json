@@ -2,15 +2,18 @@
     "contestants": [
         {
             "name": "1",
-            "score": 0
+            "score": 0,
+            "key": "W"
         },
         {
             "name": "2",
-            "score": 0
+            "score": 0,
+            "key": "A"
         },
         {
             "name": "3",
-            "score": 0
+            "score": 0,
+            "key": "S"
         }
     ],
     "categories": [

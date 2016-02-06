@@ -9,16 +9,18 @@
 {% endif %}
 
 <div class="player-container">
-
+    <script type="text/javascript">
+        $(function () {
+            $('.img-wrapper').textfill();
+        });
+    </script>
     {% for player in players %}
-        <div class="player {{ player }}" data-player-name="{{ player }}" {% if player == user %} data-active-player="true" {% endif %}>
-            <h2 style="display: inline; float:left; padding-left: 1em;">{{ player }}</h2>
+        <div class="player {{ player.name }}"
+             data-player-name="{{ player.name }}" {% if player.name == user %} data-active-player="true" {% endif %}>
+            <h2 style="display: inline; float:left; padding-left: 1em;">{{ player.name }}</h2>
             <span class="score" style="float:right; padding-right: 1em;">0</span>
             <div style="clear:both;"></div>
-            <div class="img-wrapper">
-                <img src="/img/fill{{ loop.index }}.jpg" />
-            </div>
-
+            <div class="img-wrapper"><span>{{ player.key }}</span></div>
         </div>
     {% endfor %}
 </div>

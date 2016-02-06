@@ -10,7 +10,17 @@ games with each other. The application is implemented using [ReactPHP](http://re
 	* Slabo 27px font v1.01 ([SIL Open Font License 1.1](http://scripts.sil.org/OFL)), see [TiroTypeworks/Slabo](https://github.com/TiroTypeworks/Slabo) on GitHub
 	* [Autobahn|JS](http://autobahn.ws/js/)
 	* [jQuery](http://jquery.com/)
+* Add new route `/all` where _all_ players play in the same browser window with different keys
+* Add player keys to the `game_data` JSON, to the contestants view and object
+* Add config option `enable_toggle`; if set to false, the toggle button will not be displayed
+* Add name to penalty display
+* Add different port for websockets
+* Change `buzz_display_time`
+* Remove the `buzz` class for all players when handling a question answer (this could break stuff in the original game mode)
 
+Now, there is a third interface, the `/all` interface where all players share a common browser view (cp. `Playing` below). For this version of the game, all players must be in the same room.
+In my setup, the websocket server and the web server run on the computer that shows the admin view. A second computer that connects over the network is shared by the players;
+a [MakeyMakey](http://www.makeymakey.com/) with [hardware push buttons](https://www.sparkfun.com/products/9336) is used for buzzing.
 
 Installation
 -------------

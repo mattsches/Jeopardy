@@ -1,0 +1,67 @@
+{% set obs = true %}
+{% extends 'layout.html.twig' %}
+
+{% block content %}
+    <div class="buzzer-column">
+        <div class="buzzer-controls">
+            <div id="buzzer-status" class="buzzer inactive-buzzer"></div>
+            {#<button class="button" id="buzzer">Buzz In</button>#}
+
+            <div class="penalty">
+                <span id="penalty"></span>
+            </div>
+        </div>
+        {% include 'partials/contestants.html.twig' with {'players': contestants} %}
+    </div>
+    <div class="content-wrapper">
+        {% include 'partials/board.html.twig' %}
+    </div>
+
+
+
+<script>
+    var jeo = window.jeopardy;
+    jeo.getJeopardyBoardElement = function() {
+        return $('.jeopardy-board');
+    };
+    jeo.getQuestionDisplayModal = function() {
+        return $('#question-display-modal');
+    };
+    jeo.getPlayerElements = function() {
+        return $('.player-container').find('.player').toArray();
+    };
+//    jeo.getDailyDoubleModal = function() {
+//        return $('#daily-double-display-modal');
+//    };
+//    jeo.getFinalJeopardyModal = function() {
+//        return $("#final-jeopardy-display-modal");
+//    };
+    jeo.getStatusIndicatorElement = function() {
+        return $('#buzzer-status');
+    };
+    jeo.getPenaltyDisplayElement = function() {
+        return $('#penalty');
+    };
+
+    {% for contestant in contestants %}
+    var key{{ loop.index }} = "{{ contestant.key }}".charCodeAt(0);
+    var user{{ loop.index }} = "{{ contestant.name }}";
+    {% endfor %}
+
+    $(document).ready(function() {
+        $(document).keydown(function(event) {
+            if (event.keyCode == key1) {
+                jeo.attemptBuzz(user1);
+            }
+            if (event.keyCode == key2) {
+                jeo.attemptBuzz(user2);
+            }
+            if (event.keyCode == key3) {
+                jeo.attemptBuzz(user3);
+            }
+        });
+
+    });
+</script>
+
+{% endblock %}

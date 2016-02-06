@@ -13,8 +13,8 @@ window.jeopardy = (function (jeopardy, buzzer, question) {
     jeopardy.final_jeopardy_responses_topic = "com.sc2ctl.jeopardy.final_jeopardy_responses";
     jeopardy.final_jeopardy_answer_topic = "com.sc2ctl.jeopardy.final_jeopardy_answers";
 
-    jeopardy.host = 'ws://' + window.location.hostname + '/ws';
-    jeopardy.buzz_display_time = 3000;
+    jeopardy.host = 'ws://' + window.location.hostname + ':8844/ws';
+    jeopardy.buzz_display_time = 30000; // @todo display countdown, make time configurable
     jeopardy.admin_mode = false; // Sets admin mode, which will disable feedback like penalties, buzzbuttons, etc.
 
 
@@ -61,12 +61,12 @@ window.jeopardy = (function (jeopardy, buzzer, question) {
         var difference = buzzer.buzz();
         if (difference === false) {
             // buzzer is not active, assign a penalty.
-            showPenalty();
+            showPenalty(name);
             return;
         }
         if (difference === true) {
             // The user has already buzzed.
-            console.log("User has already buzzed in! Keep on hammerin' dat j key...");
+            console.log("User has already buzzed in! Keep on hammerin' dat key...");
         }
 
         var buzz = {
@@ -286,6 +286,10 @@ window.jeopardy = (function (jeopardy, buzzer, question) {
         data = JSON.parse(data);
 
         updateContestantScore(data.contestant, data.value, true);
+	    var players = jeopardy.getPlayerElements();
+        for (var i in players) {
+            $(players[i]).removeClass('buzz');
+        }
 
         if (!data.correct) {
             buzzer.activate(jeopardy.getStatusIndicatorElement());
@@ -493,12 +497,12 @@ window.jeopardy = (function (jeopardy, buzzer, question) {
         }
     }
 
-    function showPenalty()
+    function showPenalty(name)
     {
         var penalty_span = jeopardy.getPenaltyDisplayElement();
         if (penalty_span == null) { return; }
 
-        penalty_span.html("Penalty!");
+        penalty_span.html(name + ": Penalty!");
         // This is a magic number of 3 seconds, after which we will hide the penalty display, if the penalty is expired by then.
         setTimeout(resetPenaltyDisplay, 3000);
     }

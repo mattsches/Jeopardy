@@ -6,14 +6,16 @@
         <div class="buzzer-controls">
             <div id="status-indicator" class="buzzer inactive-buzzer"></div>
 
+            {% if enable_toggle %}
             <button class="button" id="toggle-status">Toggle</button>
             <br />
+            {% endif %}
             <button class="button bad" id="modal-dismiss">Dismiss</button>
             <br />
             <button id="trigger-final" class="button facebook">Start Final</button>
         </div>
 
-        {% include 'partials/contestants.html.twig' with {'players': players, 'user': user} %}
+        {% include 'partials/contestants.html.twig' with {'players': contestants, 'user': user} %}
 
 
 
@@ -46,15 +48,20 @@
 
 
         $(document).ready(function() {
+            {% if enable_toggle %}
             $('#toggle-status').click(function() {
                 jeo.attemptBuzzerStatusChange($('#status-indicator').hasClass('inactive-buzzer'));
             });
+            {% endif %}
 
             $('.question.box').click(function() {
                 var categoryName = $(this).attr('data-category');
                 var value = $(this).find('.clue').first().text();
 
                 jeo.attemptNewQuestionDisplay(categoryName, value);
+                setTimeout(function () {
+                    jeo.attemptBuzzerStatusChange($('#status-indicator').hasClass('inactive-buzzer'))
+                }, 1000);
             });
 
             $('#modal-dismiss').click(function() {

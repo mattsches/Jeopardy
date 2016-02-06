@@ -13,9 +13,21 @@ class Contestant implements Arrayable, Jsonable
 
     protected $score;
 
-    public function __construct($name, $score = 0)
+    /**
+     * @var string
+     */
+    protected $key;
+
+    /**
+     * Contestant constructor.
+     * @param string $name
+     * @param int $score
+     * @param string $key
+     */
+    public function __construct($name, $score = 0, $key = null)
     {
         $this->name = $name;
+        $this->key = $key;
         $this->score = $score;
     }
 
@@ -25,6 +37,14 @@ class Contestant implements Arrayable, Jsonable
     public function getName()
     {
         return $this->name;
+    }
+
+    /**
+     * @return string
+     */
+    public function getKey()
+    {
+        return $this->key;
     }
 
     /**
@@ -50,7 +70,8 @@ class Contestant implements Arrayable, Jsonable
     {
         return [
             'name' => $this->getName(),
-            'score' => $this->getScore()
+            'score' => $this->getScore(),
+            'key' => $this->getKey(),
         ];
     }
 
