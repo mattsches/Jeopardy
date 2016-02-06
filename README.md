@@ -1,8 +1,16 @@
-Depotwarehouse.net's Jeopardy Player
-=====================================
+My fork of Depotwarehouse.net's Jeopardy Player
+===============================================
 
 This is a full-featured web application that allows a group of super-best-friends to play [Jeopardy!](http://www.jeopardy.com/) 
 games with each other. The application is implemented using [ReactPHP](http://reactphp.org/) and websockets.
+
+## My modifications
+
+* All should work without Internet access, i.e. no libraries or fonts must be downloaded from external sources
+	* Slabo 27px font v1.01 ([SIL Open Font License 1.1](http://scripts.sil.org/OFL)), see [TiroTypeworks/Slabo](https://github.com/TiroTypeworks/Slabo) on GitHub
+	* [Autobahn|JS](http://autobahn.ws/js/)
+	* [jQuery](http://jquery.com/)
+
 
 Installation
 -------------
