@@ -601,7 +601,9 @@ window.jeopardy = (function (jeopardy, buzzer, question) {
             question_modal.find('.content').first().find('.answer').first().find('.content').html(question.getAnswer());
         }
         question_modal.show('fast', function() {
-            clue.textfill({maxFontPixels: 150});
+	        clue.quickfit({
+		        max: 400
+	        });
         });
 
     }
