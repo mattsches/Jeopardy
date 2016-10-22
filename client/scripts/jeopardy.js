@@ -602,6 +602,7 @@ window.jeopardy = (function (jeopardy, buzzer, question) {
         }
         question_modal.show('fast', function() {
 	        clue.quickfit({
+		        min: 16,
 		        max: 400
 	        });
         });
