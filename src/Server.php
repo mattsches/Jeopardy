@@ -3,6 +3,7 @@
 namespace Depotwarehouse\Jeopardy;
 
 use Depotwarehouse\Jeopardy\Board\BoardFactory;
+use Depotwarehouse\Jeopardy\Board\ContestantNotFoundException;
 use Depotwarehouse\Jeopardy\Board\Question\DailyDouble\DailyDoubleBetEvent;
 use Depotwarehouse\Jeopardy\Board\Question\FinalJeopardy\FinalJeopardyAnswerEvent;
 use Depotwarehouse\Jeopardy\Board\Question\FinalJeopardy\FinalJeopardyAnswerRequest;
@@ -11,32 +12,32 @@ use Depotwarehouse\Jeopardy\Board\Question\FinalJeopardy\FinalJeopardyCategoryRe
 use Depotwarehouse\Jeopardy\Board\Question\FinalJeopardy\FinalJeopardyClueRequest;
 use Depotwarehouse\Jeopardy\Board\Question\FinalJeopardy\FinalJeopardyQuestionResponse;
 use Depotwarehouse\Jeopardy\Board\Question\FinalJeopardy\FinalJeopardyResponseRequest;
-use Depotwarehouse\Jeopardy\Board\Question\QuestionAnswer;
 use Depotwarehouse\Jeopardy\Board\Question\QuestionAnswerEvent;
 use Depotwarehouse\Jeopardy\Board\Question\QuestionDismissal;
 use Depotwarehouse\Jeopardy\Board\Question\QuestionDismissalEvent;
 use Depotwarehouse\Jeopardy\Board\QuestionDisplayRequestEvent;
 use Depotwarehouse\Jeopardy\Board\QuestionNotFoundException;
 use Depotwarehouse\Jeopardy\Board\QuestionSubscriptionEvent;
-use Depotwarehouse\Jeopardy\Buzzer\BuzzerResolution;
 use Depotwarehouse\Jeopardy\Buzzer\BuzzerResolutionEvent;
 use Depotwarehouse\Jeopardy\Buzzer\BuzzerStatus;
 use Depotwarehouse\Jeopardy\Buzzer\BuzzerStatusChangeEvent;
 use Depotwarehouse\Jeopardy\Buzzer\BuzzerStatusSubscriptionEvent;
 use Depotwarehouse\Jeopardy\Buzzer\BuzzReceivedEvent;
-use Depotwarehouse\Jeopardy\Buzzer\Resolver;
 use Depotwarehouse\Jeopardy\Participant\Contestant;
 use Depotwarehouse\Jeopardy\Participant\ContestantScoreChangeEvent;
 use Depotwarehouse\Jeopardy\Participant\ContestantScoreSubscriptionEvent;
 use League\Event\Emitter;
-use League\Event\Event;
 use Ratchet\Http\HttpServer;
 use Ratchet\Server\IoServer;
 use Ratchet\Wamp\WampServer;
 use Ratchet\WebSocket\WsServer;
-use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
 
+/**
+ * Class Server
+ *
+ * @package Depotwarehouse\Jeopardy
+ */
 class Server
 {
 
@@ -57,11 +58,22 @@ class Server
      */
     protected $final_jeopardy_collection_timeout = 5.5;
 
+    /**
+     * Server constructor.
+     *
+     * @param LoopInterface $loopInterface
+     */
     public function __construct(LoopInterface $loopInterface)
     {
         $this->eventLoop = $loopInterface;
     }
 
+    /**
+     * @param BoardFactory $boardFactory
+     *
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws \React\Socket\ConnectionException
+     */
     public function run(BoardFactory $boardFactory)
     {
         $emitter = new Emitter();
@@ -103,9 +115,13 @@ class Server
         });
 
         $emitter->addListener(QuestionAnswerEvent::class, function(QuestionAnswerEvent $event) use ($wamp, $board, $emitter) {
-            $questionAnswer = $event->getQuestionAnswer();
-            $board->addScore($questionAnswer->getContestant(), $questionAnswer->getRealValue());
-            $wamp->onQuestionAnswer($questionAnswer);
+            try {
+                $questionAnswer = $event->getQuestionAnswer();
+                $board->addScore($questionAnswer->getContestant(), $questionAnswer->getRealValue());
+                $wamp->onQuestionAnswer($questionAnswer);
+            } catch (ContestantNotFoundException $exception) {
+                echo $exception->getMessage();
+            }
 
             if ($questionAnswer->isCorrect()) {
                 $emitter->emit(new QuestionDismissalEvent(new QuestionDismissal($questionAnswer->getCategory(), $questionAnswer->getValue())));
@@ -189,7 +205,7 @@ class Server
 
             $contestant = $board->getContestants()->first(
                 function($key, Contestant $contestant) use ($event) {
-                    return $contestant->getName() == $event->getContestant();
+                    return $contestant->getName() === $event->getContestant();
                 }
             );
 
