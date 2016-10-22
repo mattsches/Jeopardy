@@ -1,3 +1,6 @@
 .idea/
 vendor/
 node_modules/
+.env
+game_data/
+!game_data/questions.json
