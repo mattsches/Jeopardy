@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 namespace Depotwarehouse\Jeopardy\Board;
 
 use Depotwarehouse\Jeopardy\Board\Question\FinalJeopardy\State;
@@ -11,28 +11,50 @@ use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Depotwarehouse\Jeopardy\Participant\ContestantFactory;
 use Illuminate\Support\Collection;
 
+/**
+ * Class BoardFactory
+ * @package Depotwarehouse\Jeopardy\Board
+ */
 class BoardFactory
 {
+    /**
+     *
+     */
+    const JSON_SOURCE = 'json';
 
-    const JSON_SOURCE = "json";
-
+    /**
+     * @var
+     */
     protected $filename;
+
+    /**
+     * @var string
+     */
     protected $data_source;
+
+    /**
+     * @var string
+     */
     protected $game_data_path;
 
-
-    public function __construct($filename, $game_data_path = "game_data/", $data_source = self::JSON_SOURCE)
+    /**
+     * BoardFactory constructor.
+     * @param $filename
+     * @param string $game_data_path
+     * @param string $data_source
+     */
+    public function __construct($filename, $game_data_path = 'game_data/', $data_source = self::JSON_SOURCE)
     {
         $this->filename = $filename;
         $this->game_data_path = $game_data_path;
         $this->data_source = $data_source;
     }
 
-
     /**
      * Initializes a board based on the configured data source.
      *
      * @return Board
+     * @throws \Exception
      * @throws FileNotFoundException
      */
     public function initialize()
@@ -40,13 +62,15 @@ class BoardFactory
         switch ($this->data_source) {
             default:
             case self::JSON_SOURCE:
-                $path = $this->game_data_path . $this->filename . ".json";
+                $path = $this->game_data_path . $this->filename . '.json';
                 if (!file_exists($path)) {
-                    $path = $this->game_data_path . "questions.json";
-                    if (!file_exists($path)) throw new FileNotFoundException("Could not find the file at path {$path}");
+                    $path = $this->game_data_path . 'questions.json';
+                    if (!file_exists($path)) {
+                        throw new FileNotFoundException("Could not find the file at path {$path}");
+                    }
                 }
 
-                return self::fromJson(file_get_contents($path));
+                return $this->fromJson(file_get_contents($path));
             break;
         }
     }
@@ -74,10 +98,10 @@ class BoardFactory
                                 new Clue($question->clue),
                                 new Answer($question->answer),
                                 $question->value,
-                                isset($question->daily_double) ? $question->daily_double : false,
-                                isset($question->type) ? $question->type : Question::CLUE_TYPE_DEFAULT
+                                $question->daily_double ?? false,
+                                $question->type ?? Question::CLUE_TYPE_DEFAULT
                             );
-                            if ($questionObj->getClue() === null || (isset($question->used) && $question->used)) {
+                            if ((isset($question->used) && $question->used) || $questionObj->getClue() === null) {
                                 $questionObj->setUsed(true);
                             }
                             return $questionObj;
@@ -89,7 +113,7 @@ class BoardFactory
         );
 
         if (!isset($values->final)) {
-            throw new \Exception("Final Jeopardy is not defined in your questions file");
+            throw new \Exception('Final Jeopardy is not defined in your questions file');
         }
 
         $finalJeopardyClue = new FinalJeopardyClue($values->final->category, $values->final->clue, $values->final->answer);

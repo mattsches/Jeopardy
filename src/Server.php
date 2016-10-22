@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 namespace Depotwarehouse\Jeopardy;
 
 use Depotwarehouse\Jeopardy\Board\BoardFactory;
@@ -84,7 +84,7 @@ class Server
 
         $board = $boardFactory->initialize();
 
-        $webServer = new IoServer(
+        new IoServer(
             new HttpServer(
                 new WsServer(
                     new WampServer(
@@ -110,7 +110,7 @@ class Server
         $emitter->addListener(BuzzerResolutionEvent::class, function(BuzzerResolutionEvent $event) use ($wamp) {
 
             //TODO Store this event
-            echo "Buzzer Resolution: " . $event->getResolution()->getContestant()->getName() . " buzzed in ({$event->getResolution()->getTime()}ms)\n";
+            echo 'Buzzer Resolution: ' . $event->getResolution()->getContestant()->getName() . " buzzed in ({$event->getResolution()->getTime()}ms)\n";
             $wamp->onBuzzerResolution($event->getResolution());
         });
 
@@ -121,6 +121,7 @@ class Server
                 $wamp->onQuestionAnswer($questionAnswer);
             } catch (ContestantNotFoundException $exception) {
                 echo $exception->getMessage();
+                // TODO handle exception
             }
 
             if ($questionAnswer->isCorrect()) {
@@ -144,7 +145,11 @@ class Server
         });
 
         $emitter->addListener(DailyDoubleBetEvent::class, function(DailyDoubleBetEvent $event) use ($wamp, $board) {
-            $question = $board->getQuestionByCategoryAndValue($event->getCategory(), $event->getValue());
+            try {
+                $question = $board->getQuestionByCategoryAndValue($event->getCategory(), $event->getValue());
+            } catch (QuestionNotFoundException $e) {
+                // TODO
+            }
             $wamp->onDailyDoubleBetRecieved($question, $event->getCategory(), $event->getBet());
         });
 
@@ -168,7 +173,7 @@ class Server
             }
 
             // TODO store this event
-            echo "Buzz in (" . $event->getContestant()->getName() . "): " . $event->getDifference() . "ms \n";
+            echo 'Buzz in (' . $event->getContestant()->getName() . '): ' . $event->getDifference() . "ms \n";
             $board->getResolver()->addBuzz($event);
 
         });
@@ -179,7 +184,7 @@ class Server
         });
 
         $emitter->addListener(FinalJeopardyCategoryRequest::class, function(FinalJeopardyCategoryRequest $event) use ($wamp, $board) {
-            $wamp->onFinalJeopardyRequest("category", $board->getFinalJeopardyClue());
+            $wamp->onFinalJeopardyRequest('category', $board->getFinalJeopardyClue());
         });
 
         $emitter->addListener(FinalJeopardyClueRequest::class, function(FinalJeopardyClueRequest $event) use ($wamp, $board) {
@@ -192,16 +197,20 @@ class Server
                     //TODO logging
                     echo "Did not recieve all bets.\n";
                     $missingbets = $board->getFinalJeopardy()->getMissingBets();
-                    $missingbets = implode(", ", $missingbets);
+                    $missingbets = implode(', ', $missingbets);
                     echo "Require bets from: {$missingbets}\n";
                 }
-                $wamp->onFinalJeopardyRequest("clue", $board->getFinalJeopardyClue());
+                $wamp->onFinalJeopardyRequest('clue', $board->getFinalJeopardyClue());
             });
 
         });
 
         $emitter->addListener(ContestantScoreChangeEvent::class, function(ContestantScoreChangeEvent $event) use ($wamp, $board) {
-            $board->addScore(new Contestant($event->getContestant()), $event->getScoreChange());
+            try {
+                $board->addScore(new Contestant($event->getContestant()), $event->getScoreChange());
+            } catch (ContestantNotFoundException $e) {
+                //TODO
+            }
 
             $contestant = $board->getContestants()->first(
                 function($key, Contestant $contestant) use ($event) {
@@ -220,15 +229,15 @@ class Server
         $emitter->addListener(FinalJeopardyAnswerRequest::class, function(FinalJeopardyAnswerRequest $event) use ($wamp, $board) {
             $wamp->onFinalJeopardyAnswerCollectionRequest();
 
-            $timer = $this->eventLoop->addTimer($this->final_jeopardy_collection_timeout, function() use ($wamp, $board) {
+            $this->eventLoop->addTimer($this->final_jeopardy_collection_timeout, function() use ($wamp, $board) {
                 if (!$board->getFinalJeopardy()->hasAllAnswers()) {
                     //TODO logging
                     echo "Did not receive all final jeopardy answers!\n";
                     $missingAnswers = $board->getFinalJeopardy()->getMissingAnswers();
-                    $missingAnswers = implode(", ", $missingAnswers);
+                    $missingAnswers = implode(', ', $missingAnswers);
                     echo "Require answers from: {$missingAnswers}\n";
                 }
-                $wamp->onFinalJeopardyRequest("answer", $board->getFinalJeopardyClue());
+                $wamp->onFinalJeopardyRequest('answer', $board->getFinalJeopardyClue());
             });
 
 
@@ -252,7 +261,7 @@ class Server
 
             if (!$finalJeopardy->hasAnswer($event->getContestant())) {
                 //TODO logging
-                $response = new FinalJeopardyQuestionResponse($event->getContestant(), 0, "No answer, Troy");
+                $response = new FinalJeopardyQuestionResponse($event->getContestant(), 0, 'No answer, Troy');
                 $wamp->onFinalJeopardyResponse($response);
                 return;
             }
@@ -262,5 +271,4 @@ class Server
 
         $this->eventLoop->run();
     }
-
 }

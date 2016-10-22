@@ -1,8 +1,9 @@
 <?php
-
+declare(strict_types=1);
 namespace Depotwarehouse\Jeopardy\Board;
 
-use Depotwarehouse\Jeopardy\Board\Question\FinalJeopardy;
+use Depotwarehouse\Jeopardy\Board\Question\FinalJeopardy\State;
+use Depotwarehouse\Jeopardy\Buzzer\BuzzerResolution;
 use Depotwarehouse\Jeopardy\Buzzer\BuzzerStatus;
 use Depotwarehouse\Jeopardy\Buzzer\Resolver;
 use Depotwarehouse\Jeopardy\Participant\Contestant;
@@ -28,9 +29,15 @@ class Board
 
     /**
      * Our clue for final Jeopardy.
-     * @var FinalJeopardy\State
+     * @var State
      */
     protected $finalJeopardyState;
+
+    /**
+     * The current status of the buzzer.
+     * @var BuzzerStatus
+     */
+    protected $buzzerStatus;
 
     /**
      * The buzzer resolver which resolves who won a particular buzz.
@@ -43,9 +50,9 @@ class Board
      * @param Category[]|Collection $categories
      * @param Resolver $resolver
      * @param BuzzerStatus $buzzerStatus
-     * @param FinalJeopardy\State $final
+     * @param State $final
      */
-    public function __construct($contestants, $categories, Resolver $resolver, BuzzerStatus $buzzerStatus, FinalJeopardy\State $final)
+    public function __construct($contestants, $categories, Resolver $resolver, BuzzerStatus $buzzerStatus, State $final)
     {
         $this->contestants = ($contestants instanceof Collection) ? $contestants : new Collection($contestants);
         $this->categories = new Collection($categories);
@@ -57,31 +64,25 @@ class Board
     /**
      * @return BuzzerStatus
      */
-    public function getBuzzerStatus()
+    public function getBuzzerStatus(): BuzzerStatus
     {
         return $this->buzzerStatus;
     }
 
     /**
      * @param BuzzerStatus $buzzerStatus
-     * @return $this
+     * @return Board
      */
-    public function setBuzzerStatus(BuzzerStatus $buzzerStatus)
+    public function setBuzzerStatus(BuzzerStatus $buzzerStatus): Board
     {
         $this->buzzerStatus = $buzzerStatus;
         return $this;
     }
 
     /**
-     * The current status of the buzzer.
-     * @var BuzzerStatus
-     */
-    protected $buzzerStatus;
-
-    /**
      * @return Resolver
      */
-    public function getResolver()
+    public function getResolver(): Resolver
     {
         return $this->resolver;
     }
@@ -90,9 +91,9 @@ class Board
      * Resolves the current buzzer competition and returns the resolution.
      * As a side-effect, this will also disable the buzzer.
      *
-     * @return \Depotwarehouse\Jeopardy\Buzzer\BuzzerResolution
+     * @return BuzzerResolution
      */
-    public function resolveBuzzes()
+    public function resolveBuzzes(): BuzzerResolution
     {
         $resolution = $this->resolver->resolve();
         $this->buzzerStatus->disable();
@@ -106,10 +107,10 @@ class Board
      * @return Contestant
      * @throws \Depotwarehouse\Jeopardy\Board\ContestantNotFoundException
      */
-    public function addScore(Contestant $contestant, $value)
+    public function addScore(Contestant $contestant, $value): Contestant
     {
         /** @var Contestant $c */
-        $c = $this->getContestants()->first(function($key, Contestant $c) use ($contestant) {
+        $c = $this->getContestants()->first(function(Contestant $c) use ($contestant) {
             return $c->getName() === $contestant->getName();
         });
 
@@ -131,34 +132,28 @@ class Board
      * @return Question
      * @throws QuestionNotFoundException
      */
-    public function getQuestionByCategoryAndValue($categoryName, $value)
+    public function getQuestionByCategoryAndValue($categoryName, $value): Question
     {
-        //TODO what if we can't find anything? what if either of these return empty. Must throw exceptions, I suppose.
-
         /** @var Category $category */
-        $category = $this->categories->first(function ($key, Category $category) use ($categoryName) {
+        $category = $this->categories->first(function (Category $category) use ($categoryName) {
             return $category->getName() === $categoryName;
         });
-
         if ($category === null) {
             throw new QuestionNotFoundException;
         }
-
-        $question = $category->getQuestions()->first(function ($key, Question $question) use ($value) {
+        $question = $category->getQuestions()->first(function (Question $question) use ($value) {
             return $question->getValue() === $value;
         });
-
         if ($question === null) {
             throw new QuestionNotFoundException;
         }
-
         return $question;
     }
 
     /**
      * @return Collection
      */
-    public function getContestants()
+    public function getContestants(): Collection
     {
         return $this->contestants;
     }
@@ -166,15 +161,15 @@ class Board
     /**
      * @return Collection
      */
-    public function getCategories()
+    public function getCategories(): Collection
     {
         return $this->categories;
     }
 
     /**
-     * @return FinalJeopardy\State
+     * @return State
      */
-    public function getFinalJeopardy()
+    public function getFinalJeopardy(): State
     {
         return $this->finalJeopardyState;
     }
@@ -182,7 +177,7 @@ class Board
     /**
      * @return Question\FinalJeopardyClue
      */
-    public function getFinalJeopardyClue()
+    public function getFinalJeopardyClue(): Question\FinalJeopardyClue
     {
         return $this->finalJeopardyState->getClue();
     }

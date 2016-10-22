@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 namespace Depotwarehouse\Jeopardy\Tests\Participant;
 
 use Depotwarehouse\Jeopardy\Participant\ContestantFactory;
@@ -11,7 +12,7 @@ use Depotwarehouse\Jeopardy\Participant\ContestantFactory;
 class ContestantFactoryTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * 
+     *
      */
     public function test_it_deserializes_stdClass()
     {

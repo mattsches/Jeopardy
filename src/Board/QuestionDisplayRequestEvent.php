@@ -1,16 +1,31 @@
 <?php
-
+declare(strict_types=1);
 namespace Depotwarehouse\Jeopardy\Board;
 
 use League\Event\AbstractEvent;
 
+/**
+ * Class QuestionDisplayRequestEvent
+ * @package Depotwarehouse\Jeopardy\Board
+ */
 class QuestionDisplayRequestEvent extends AbstractEvent
 {
-
+    /**
+     * @var string
+     */
     protected $categoryName;
+
+    /**
+     * @var int
+     */
     protected $value;
 
-    function __construct($categoryName, $value)
+    /**
+     * QuestionDisplayRequestEvent constructor.
+     * @param string $categoryName
+     * @param int $value
+     */
+    public function __construct(string $categoryName, int $value)
     {
         $this->categoryName = $categoryName;
         $this->value = $value;
@@ -19,7 +34,7 @@ class QuestionDisplayRequestEvent extends AbstractEvent
     /**
      * @return string
      */
-    public function getCategoryName()
+    public function getCategoryName(): string
     {
         return $this->categoryName;
     }
@@ -27,9 +42,8 @@ class QuestionDisplayRequestEvent extends AbstractEvent
     /**
      * @return int
      */
-    public function getValue()
+    public function getValue(): int
     {
         return $this->value;
     }
-
 }

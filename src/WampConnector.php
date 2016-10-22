@@ -134,7 +134,7 @@ class WampConnector implements WampServerInterface
                     echo "Did not receive proper question request, did not have a category or value\n";
                     break;
                 }
-                $this->emitter->emit(new QuestionDisplayRequestEvent($event['category'], $event['value']));
+                $this->emitter->emit(new QuestionDisplayRequestEvent($event['category'], (int)$event['value']));
                 break;
 
             case self::QUESTION_ANSWER_QUESTION:
