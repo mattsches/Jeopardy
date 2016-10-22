@@ -2,7 +2,11 @@
 
 require 'vendor/autoload.php';
 
-$question_filename = isset($argv[1]) ? $argv[1] : "questions";
+$dotenv = new Dotenv\Dotenv(__DIR__);
+$dotenv->load();
+
+$question_filename = isset($argv[1]) ? $argv[1] : getenv('CURRENT_GAME');
+echo 'Starting game "'.$question_filename.'"'.PHP_EOL;
 
 $server = new \Depotwarehouse\Jeopardy\Server(\React\EventLoop\Factory::create());
 

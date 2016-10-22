@@ -6,7 +6,8 @@
         "illuminate/support": "~5.0",
         "symfony/var-dumper": "~2.6",
         "twig/twig": "~1.18",
-        "league/route": "~1.0"
+        "league/route": "~1.0",
+        "vlucas/phpdotenv": "^2.4"
     },
     "autoload": {
         "psr-4": {
