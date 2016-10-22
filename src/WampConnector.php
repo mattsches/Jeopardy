@@ -20,21 +20,31 @@ use Ratchet\ConnectionInterface;
 use Ratchet\Wamp\Topic;
 use Ratchet\Wamp\WampServerInterface;
 
+/**
+ * Class WampConnector
+ *
+ * @package Depotwarehouse\Jeopardy
+ */
 class WampConnector implements WampServerInterface
 {
 
     // Our list of topics. These should all be replicated in the jeopardy.js module.
-    const BUZZER_TOPIC = "com.sc2ctl.jeopardy.buzzer";
-    const BUZZER_STATUS_TOPIC = "com.sc2ctl.jeopardy.buzzer_status";
-    const QUESTION_DISPLAY_TOPIC = "com.sc2ctl.jeopardy.question_display";
-    const QUESTION_DISMISS_TOPIC = "com.sc2ctl.jeopardy.question_dismiss";
-    const QUESTION_ANSWER_QUESTION = "com.sc2ctl.jeopardy.question_answer";
-    const CONTESTANT_SCORE = "com.sc2ctl.jeopardy.contestant_score";
-    const DAILY_DOUBLE_BET_TOPIC = "com.sc2ctl.jeopardy.daily_double_bet";
-    const FINAL_JEOPARDY_TOPIC = "com.sc2ctl.jeopardy.final_jeopardy";
-    const FINAL_JEOPARDY_RESPONSES_TOPIC = "com.sc2ctl.jeopardy.final_jeopardy_responses";
-    const FINAL_JEOPARDY_ANSWER_TOPIC = "com.sc2ctl.jeopardy.final_jeopardy_answers";
+    const BUZZER_TOPIC = 'com.sc2ctl.jeopardy.buzzer';
+    const BUZZER_STATUS_TOPIC = 'com.sc2ctl.jeopardy.buzzer_status';
+    const QUESTION_DISPLAY_TOPIC = 'com.sc2ctl.jeopardy.question_display';
+    const QUESTION_DISMISS_TOPIC = 'com.sc2ctl.jeopardy.question_dismiss';
+    const QUESTION_ANSWER_QUESTION = 'com.sc2ctl.jeopardy.question_answer';
+    const CONTESTANT_SCORE = 'com.sc2ctl.jeopardy.contestant_score';
+    const DAILY_DOUBLE_BET_TOPIC = 'com.sc2ctl.jeopardy.daily_double_bet';
+    const FINAL_JEOPARDY_TOPIC = 'com.sc2ctl.jeopardy.final_jeopardy';
+    const FINAL_JEOPARDY_RESPONSES_TOPIC = 'com.sc2ctl.jeopardy.final_jeopardy_responses';
+    const FINAL_JEOPARDY_ANSWER_TOPIC = 'com.sc2ctl.jeopardy.final_jeopardy_answers';
 
+    /**
+     * WampConnector constructor.
+     *
+     * @param Emitter $emitter
+     */
     public function __construct(Emitter $emitter)
     {
         $this->emitter = $emitter;
@@ -48,7 +58,7 @@ class WampConnector implements WampServerInterface
     protected $emitter;
 
     /** @var Topic[] */
-    protected $subscribedTopics = [ ];
+    protected $subscribedTopics = [];
 
     /**
      * A request to subscribe to a topic has been made.
@@ -61,7 +71,7 @@ class WampConnector implements WampServerInterface
      * @param \Ratchet\ConnectionInterface $conn
      * @param string|Topic $topic The topic to subscribe to
      */
-    function onSubscribe(ConnectionInterface $conn, $topic)
+    public function onSubscribe(ConnectionInterface $conn, $topic)
     {
         $this->subscribedTopics[$topic->getId()] = $topic;
 
@@ -91,9 +101,8 @@ class WampConnector implements WampServerInterface
      * @param array $exclude A list of session IDs the message should be excluded from (blacklist)
      * @param array $eligible A list of session Ids the message should be send to (whitelist)
      */
-    function onPublish(ConnectionInterface $conn, $topic, $event, array $exclude, array $eligible)
+    public function onPublish(ConnectionInterface $conn, $topic, $event, array $exclude, array $eligible)
     {
-
         switch ((string)$topic) {
             case self::BUZZER_TOPIC:
                 $contestant = new Contestant($event['name']);
@@ -140,7 +149,7 @@ class WampConnector implements WampServerInterface
                         $event['category'],
                         $event['value'],
                         new Contestant($event['contestant']),
-                        (isset($event['correct'])) ? $event['correct'] : false
+                        isset($event['correct']) ? $event['correct'] : false
                     )
                 );
 
@@ -187,22 +196,22 @@ class WampConnector implements WampServerInterface
             case self::FINAL_JEOPARDY_TOPIC:
                 if (!isset($event['content'])) {
                     //TODO logging
-                    echo "Recieved invalid final jeopardy topic request - no content selection";
+                    echo 'Recieved invalid final jeopardy topic request - no content selection';
                     break;
                 }
 
-                if ($event['content'] == "category") {
+                if ($event['content'] === 'category') {
                     $this->emitter->emit(new Question\FinalJeopardy\FinalJeopardyCategoryRequest());
                     break;
                 }
 
-                if ($event['content'] == "clue") {
-                    echo "Recieved clue request";
+                if ($event['content'] === 'clue') {
+                    echo 'Recieved clue request';
                     $this->emitter->emit(new Question\FinalJeopardy\FinalJeopardyClueRequest());
                     break;
                 }
 
-                if ($event['content'] == "answer") {
+                if ($event['content'] === 'answer') {
                     $this->emitter->emit(new Question\FinalJeopardy\FinalJeopardyAnswerRequest());
                     break;
                 }
@@ -216,7 +225,7 @@ class WampConnector implements WampServerInterface
                     break;
                 }
 
-                if ($event['type'] == "bet") {
+                if ($event['type'] === 'bet') {
 
                     if (!isset($event['bet'])) {
                         //TODO logging
@@ -228,7 +237,7 @@ class WampConnector implements WampServerInterface
                         $event['bet']));
                     break;
                 }
-                if ($event['type'] == "answer") {
+                if ($event['type'] === 'answer') {
                     if (!isset($event['answer'])) {
                         //TODO Logging
                         echo "Invalid final jeopardy answer, did not include an answer response\n";
@@ -297,7 +306,7 @@ class WampConnector implements WampServerInterface
      * @param array $blacklist
      * @param array $whitelist
      */
-    public function onBuzzerStatusChange(BuzzerStatus $status, $blacklist = [ ], $whitelist = [ ])
+    public function onBuzzerStatusChange(BuzzerStatus $status, array $blacklist = [], array $whitelist = [])
     {
         if (!array_key_exists(self::BUZZER_STATUS_TOPIC, $this->subscribedTopics)) {
             return;
@@ -325,6 +334,9 @@ class WampConnector implements WampServerInterface
         $this->subscribedTopics[self::CONTESTANT_SCORE]->broadcast($response, [ ], [ $sessionId ]);
     }
 
+    /**
+     * @param Contestant $contestant
+     */
     public function onContestantScoreUpdate(Contestant $contestant)
     {
         if (!array_key_exists(self::CONTESTANT_SCORE, $this->subscribedTopics)) {
@@ -431,6 +443,10 @@ class WampConnector implements WampServerInterface
         $this->subscribedTopics[self::QUESTION_DISMISS_TOPIC]->broadcast($response);
     }
 
+    /**
+     * @param                            $requestType
+     * @param Question\FinalJeopardyClue $finalJeopardyClue
+     */
     public function onFinalJeopardyRequest($requestType, Question\FinalJeopardyClue $finalJeopardyClue)
     {
         if (!array_key_exists(self::FINAL_JEOPARDY_TOPIC, $this->subscribedTopics)) {
@@ -445,6 +461,9 @@ class WampConnector implements WampServerInterface
         $this->subscribedTopics[self::FINAL_JEOPARDY_TOPIC]->broadcast($response);
     }
 
+    /**
+     *
+     */
     public function onFinalJeopardyBetCollectionRequest()
     {
         if (!array_key_exists(self::FINAL_JEOPARDY_RESPONSES_TOPIC, $this->subscribedTopics)) {
@@ -452,12 +471,15 @@ class WampConnector implements WampServerInterface
         }
 
         $response = json_encode([
-            'content' => "bet"
+            'content' => 'bet'
         ]);
 
         $this->subscribedTopics[self::FINAL_JEOPARDY_RESPONSES_TOPIC]->broadcast($response);
     }
 
+    /**
+     *
+     */
     public function onFinalJeopardyAnswerCollectionRequest()
     {
         if (!array_key_exists(self::FINAL_JEOPARDY_RESPONSES_TOPIC, $this->subscribedTopics)) {
@@ -471,6 +493,9 @@ class WampConnector implements WampServerInterface
         $this->subscribedTopics[self::FINAL_JEOPARDY_RESPONSES_TOPIC]->broadcast($response);
     }
 
+    /**
+     * @param Question\FinalJeopardy\FinalJeopardyQuestionResponse $response
+     */
     public function onFinalJeopardyResponse(Question\FinalJeopardy\FinalJeopardyQuestionResponse $response)
     {
         if (!array_key_exists(self::FINAL_JEOPARDY_ANSWER_TOPIC, $this->subscribedTopics)) {
@@ -486,7 +511,7 @@ class WampConnector implements WampServerInterface
      * @param  ConnectionInterface $conn The socket/connection that just connected to your application
      * @throws \Exception
      */
-    function onOpen(ConnectionInterface $conn)
+    public function onOpen(ConnectionInterface $conn)
     {
     }
 
@@ -495,7 +520,7 @@ class WampConnector implements WampServerInterface
      * @param  ConnectionInterface $conn The socket/connection that is closing/closed
      * @throws \Exception
      */
-    function onClose(ConnectionInterface $conn)
+    public function onClose(ConnectionInterface $conn)
     {
     }
 
@@ -506,7 +531,7 @@ class WampConnector implements WampServerInterface
      * @param  \Exception $e
      * @throws \Exception
      */
-    function onError(ConnectionInterface $conn, \Exception $e)
+    public function onError(ConnectionInterface $conn, \Exception $e)
     {
     }
 
@@ -517,7 +542,7 @@ class WampConnector implements WampServerInterface
      * @param string|Topic $topic The topic to execute the call against
      * @param array $params Call parameters received from the client
      */
-    function onCall(ConnectionInterface $conn, $id, $topic, array $params)
+    public function onCall(ConnectionInterface $conn, $id, $topic, array $params)
     {
     }
 
@@ -526,8 +551,7 @@ class WampConnector implements WampServerInterface
      * @param \Ratchet\ConnectionInterface $conn
      * @param string|Topic $topic The topic to unsubscribe from
      */
-    function onUnSubscribe(ConnectionInterface $conn, $topic)
+    public function onUnSubscribe(ConnectionInterface $conn, $topic)
     {
     }
-
 }

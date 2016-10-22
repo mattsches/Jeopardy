@@ -53,7 +53,9 @@ class BoardFactory
 
     /**
      * @param string $json
+     *
      * @return Board
+     * @throws \Exception
      */
     public function fromJson($json)
     {
@@ -72,10 +74,10 @@ class BoardFactory
                                 new Clue($question->clue),
                                 new Answer($question->answer),
                                 $question->value,
-                                (isset($question->daily_double)) ? $question->daily_double : false,
-                                (isset($question->type)) ? $question->type : Question::CLUE_TYPE_DEFAULT
+                                isset($question->daily_double) ? $question->daily_double : false,
+                                isset($question->type) ? $question->type : Question::CLUE_TYPE_DEFAULT
                             );
-                            if ($questionObj->getClue() == null || (isset($question->used) && $question->used)) {
+                            if ($questionObj->getClue() === null || (isset($question->used) && $question->used)) {
                                 $questionObj->setUsed(true);
                             }
                             return $questionObj;
